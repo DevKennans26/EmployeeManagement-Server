@@ -4,6 +4,10 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/* Configure logging using the LogService, settings can be adjusted in appsettings.json */
+LogService.ConfigureLogging(builder.Configuration);
+builder.Host.UseSerilog(Log.Logger);
+
 builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;
@@ -20,8 +24,6 @@ builder.Services.AddHttpLogging(logging =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-LogService.ConfigureLogging(builder.Configuration);
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -31,8 +33,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpLogging();
+app.UseSerilogRequestLogging();
+app.UseHttpsRedirection();
+
 app.UseHttpsRedirection();
 
 app.Run();
-Log.CloseAndFlush();

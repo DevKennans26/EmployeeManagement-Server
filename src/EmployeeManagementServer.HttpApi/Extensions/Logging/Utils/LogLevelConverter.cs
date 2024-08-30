@@ -4,15 +4,15 @@ using Serilog.Events;
 namespace EmployeeManagementServer.HttpApi.Extensions.Logging.Utils;
 
 /// <summary>
-/// Utility class for converting custom logging levels to Serilog's LogEventLevel.
+/// Utility class for converting custom logging levels defined in the application to Serilog's corresponding <see cref="LogEventLevel"/>.
 /// </summary>
 public static class LogLevelConverter
 {
     /// <summary>
-    /// Converts the custom LoggingLevels enum to Serilog's LogEventLevel.
+    /// Converts the custom <see cref="LoggingLevels"/> enum to Serilog's <see cref="LogEventLevel"/>.
     /// </summary>
     /// <param name="level">The custom logging level to be converted.</param>
-    /// <returns>The equivalent Serilog LogEventLevel.</returns>
+    /// <returns>The equivalent <see cref="LogEventLevel"/> that Serilog can use.</returns>
     public static LogEventLevel ConvertEnumToSerilogEventLevel(LoggingLevels level) =>
         level switch
         {
