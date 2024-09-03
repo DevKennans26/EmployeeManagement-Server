@@ -1,11 +1,17 @@
 using EmployeeManagementServer.HttpApi.Extensions.Logging;
+using EmployeeManagementServer.HttpApi.Extensions.Logging.Constants;
+using EmployeeManagementServer.HttpApi.Extensions.Logging.Context.HttpRequest;
 using Microsoft.AspNetCore.HttpLogging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 /* Configure logging using the LogService, settings can be adjusted in appsettings.json */
-LogService.ConfigureLogging(builder.Configuration);
+LogService.ConfigureLogging(builder.Configuration, LogTargets.Console); /*
+                                                                         * Console logging is default enabled on system, mean: it is suggested that enable the console option.
+                                                                         * To enable additional log targets, use the LogTargets enum.
+                                                                         * Example: (LogTargets.Console | LogTargets.Seq) or (default: LogTargets.Console) or (LogTargets.Seq) or ...
+                                                                         */
 builder.Host.UseSerilog(Log.Logger);
 
 builder.Services.AddHttpLogging(logging =>
@@ -33,9 +39,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.EnrichDiagnosticContext =
+        Enricher.HttpRequestEnricher; /* Enriches logs with additional (custom) HTTP request context. */
+});
 app.UseHttpsRedirection();
 
 app.UseHttpsRedirection();
 
 app.Run();
+await Log.CloseAndFlushAsync();
