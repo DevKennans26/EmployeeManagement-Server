@@ -1,7 +1,9 @@
+using EmployeeManagementServer.Application;
 using EmployeeManagementServer.HttpApi.Extensions.Logging;
 using EmployeeManagementServer.HttpApi.Extensions.Logging.Constants;
 using EmployeeManagementServer.HttpApi.Extensions.Logging.Context.HttpRequest;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,10 +30,30 @@ builder.Services.AddHttpLogging(logging =>
     logging.CombineLogs = true;
 });
 
+IWebHostEnvironment env = builder.Environment;
+builder.Configuration
+    .SetBasePath(env.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+
+if (env.IsDevelopment())
+    builder.Configuration.AddUserSecrets<Program>();
+builder.Configuration.AddEnvironmentVariables();
+
+builder.Services.AddApplicationServices();
+
+builder.Services.AddControllers();
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<ApiBehaviorOptions>(configureOptions =>
+{
+    configureOptions.SuppressModelStateInvalidFilter =
+        true; /* Configure API behavior options to suppress automatic model state validation. */
+});
 
 var app = builder.Build();
 
@@ -47,7 +69,9 @@ app.UseSerilogRequestLogging(options =>
     options.EnrichDiagnosticContext =
         Enricher.HttpRequestEnricher; /* Enriches logs with additional (custom) HTTP request context. */
 });
-app.UseHttpsRedirection();
+app.UseHttpLogging();
+
+app.MapControllers();
 
 app.Run();
 await Log.CloseAndFlushAsync();
