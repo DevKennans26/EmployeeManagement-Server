@@ -1,4 +1,5 @@
 using EmployeeManagementServer.Application;
+using EmployeeManagementServer.HttpApi.Extensions.Exceptions.Handling;
 using EmployeeManagementServer.HttpApi.Extensions.Logging;
 using EmployeeManagementServer.HttpApi.Extensions.Logging.Constants;
 using EmployeeManagementServer.HttpApi.Extensions.Logging.Context.HttpRequest;
@@ -40,6 +41,9 @@ if (env.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 builder.Configuration.AddEnvironmentVariables();
 
+/* Register the ExceptionHandlerMiddleware for handling exceptions globally. */
+builder.Services.AddTransient<ExceptionHandlerMiddleware>();
+
 builder.Services.AddApplicationServices();
 
 builder.Services.AddControllers();
@@ -63,6 +67,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+/* Add the global exception handling middleware to the request pipeline. */
+app.ConfigureGlobalExceptionHandlingMiddleware();
 
 app.UseSerilogRequestLogging(options =>
 {

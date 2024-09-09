@@ -1,4 +1,5 @@
-﻿using EmployeeManagementServer.HttpApi.Extensions.Exceptions.CustomOnes.Fields;
+﻿using System.Runtime.CompilerServices;
+using EmployeeManagementServer.HttpApi.Extensions.Exceptions.CustomOnes.Fields;
 using EmployeeManagementServer.HttpApi.Extensions.Logging.Constants;
 
 namespace EmployeeManagementServer.HttpApi.Extensions.Exceptions.CustomOnes;
@@ -14,10 +15,10 @@ public class BusinessException : Exception,
 {
     /// <inheritdoc/>
     public string? Code { get; set; }
-    
+
     /// <inheritdoc/>
     public string? Details { get; set; }
-    
+
     /// <inheritdoc/>
     public LoggingLevels LogLevel { get; set; }
 
@@ -34,8 +35,13 @@ public class BusinessException : Exception,
         string? message = null,
         string? details = null,
         Exception? innerException = null,
-        LoggingLevels logLevel = LoggingLevels.Warning)
-    : base(message, innerException)
+        LoggingLevels logLevel = LoggingLevels.Warning,
+        [CallerFilePath] string sourceFilePath = "",
+        [CallerLineNumber] int sourceLineNumber = 0,
+        [CallerMemberName] string memberName = "")
+        : base(
+            message ?? $"An exception occurred in {sourceFilePath} at line {sourceLineNumber}, in method {memberName}.",
+            innerException)
     {
         Code = code;
         Details = details;

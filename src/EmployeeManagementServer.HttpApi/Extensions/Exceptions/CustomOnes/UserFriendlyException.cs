@@ -22,12 +22,12 @@ public class UserFriendlyException : BusinessException,
         string? details = null,
         Exception? innerException = null,
         LoggingLevels logLevel = LoggingLevels.Warning)
-    : base(
-        code,
-        message,
-        details,
-        innerException,
-        logLevel)
+        : base(
+            code,
+            message,
+            details,
+            innerException,
+            logLevel)
     {
         Details = details;
     }
