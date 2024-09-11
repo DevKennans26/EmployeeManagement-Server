@@ -1,7 +1,10 @@
 ﻿using System.Text;
+using System.Text.Json;
 using EmployeeManagementServer.Domain.Shared.Constants.Exceptions.Global.Codes;
+using EmployeeManagementServer.Domain.Shared.Constants.Exceptions.Global.Messages;
 using EmployeeManagementServer.HttpApi.Extensions.Exceptions.CustomOnes;
 using EmployeeManagementServer.HttpApi.Extensions.Exceptions.Handling.Utils.Global;
+using FluentValidation;
 using Serilog;
 using Serilog.Events;
 
@@ -12,6 +15,54 @@ namespace EmployeeManagementServer.HttpApi.Extensions.Exceptions.Handling.Utils;
 /// </summary>
 public static class ExceptionHandlingOperations
 {
+    /// <summary>
+    /// Generates a JSON response string based on the provided exception.
+    /// This method formats the exception details into a JSON structure that includes error codes and messages.
+    /// The response varies depending on the type of exception.
+    /// </summary>
+    /// <param name="exception">The exception for which the response is being generated.</param>
+    /// <returns>A JSON-formatted string representing the exception details.</returns>
+    public static string GetExecutedResponse(Exception exception)
+    {
+        string responsibleExceptionCode =
+                ((exception is BusinessException customException
+                     ? customException.Code ?? AppSpecificCodes.InternalServerCode
+                     : AppSpecificCodes.InternalServerCode) +
+                 $" [For more details on system codes, visit: {AboutAppSpecificCodes.SourceLink}]"); /*
+                 * Determines the appropriate exception code to use for the response.
+                 * If the exception is a BusinessException, use its Code property or fall back to InternalServerCode if the Code is null.
+                 * Otherwise, use the InternalServerCode by default.
+                 */
+
+        string responsibleExceptionMessage = exception is UserFriendlyException userFriendlyException
+                ? userFriendlyException.Message +
+                  (!string.IsNullOrWhiteSpace(userFriendlyException.Details)
+                      ? $" (Details: {userFriendlyException.Details})"
+                      : string.Empty)
+                : AppSpecificMessages.InternalExceptionMessage; /*
+                                                                 * Constructs the exception message to include in the response.
+                                                                 * If the exception is a UserFriendlyException, use its Message property and append Details if available.
+                                                                 * Otherwise, use a default internal exception message.
+                                                                 */
+
+        /* If the exception is a ValidationException, serialize a JSON object with the type, code, and error messages. */
+        if (exception.GetType() == typeof(ValidationException))
+            return JsonSerializer.Serialize(new
+            {
+                Type = AboutAppSpecificCodes.SourceType,
+                Code = responsibleExceptionCode,
+                Errors = $"Message: {((ValidationException)exception).Errors.Select(selector => selector.ErrorMessage)}"
+            });
+
+        /* For other types of exceptions, serialize a JSON object with the type, code, and formatted exception message. */
+        return JsonSerializer.Serialize(new
+        {
+            Type = AboutAppSpecificCodes.SourceType,
+            Code = responsibleExceptionCode,
+            Errors = $"Message: {responsibleExceptionMessage}"
+        });
+    }
+
     /// <summary>
     /// Logs the given exception asynchronously using Serilog.
     /// This method offloads the logging task to a background thread to avoid blocking the main execution flow.

@@ -13,5 +13,7 @@ public static class AboutAppSpecificCodes
     /// This link serves as a quick navigation tool for locating the code base related to exceptions.
     /// </summary>
     public static string SourceLink { get; } =
-        "https://github.com/DevKennans26/EmployeeManagement-Server/tree/main/src/EmployeeManagementServer.Domain.Shared/Constants/Exceptions/Global/AppSpecificCodes.cs";
+        "https://github.com/DevKennans26/EmployeeManagement-Server/tree/main/src/EmployeeManagementServer.Domain.Shared/Constants/Exceptions/Global/Codes/AppSpecificCodes.cs";
+
+    public static string SourceType { get; } = "https://datatracker.ietf.org/doc/html/rfc7231";
 }
